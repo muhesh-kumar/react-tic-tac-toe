@@ -1,21 +1,36 @@
-import { getByPlaceholderText } from '@testing-library/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
-function Square(props) {
-  return (
-    <button className="square" onClick={props.onClick}>
-      {props.value}
-    </button>
-  );
+class Square extends React.Component {
+  render() {
+    return (
+      <button
+        className="square"
+        onClick={this.props.onClick}
+        style={
+          this.props.isWinningSquare
+            ? {
+                backgroundColor: 'yellowgreen',
+              }
+            : null
+        }
+      >
+        {this.props.value}
+      </button>
+    );
+  }
 }
 
 class Board extends React.Component {
   renderSquare(i) {
+    console.log('Row num: ', i);
     return (
       <Square
         value={this.props.squares[i]}
+        isWinningSquare={
+          this.props.winningSquareIndices.find((e) => e === i) !== undefined
+        }
         onClick={() => this.props.onClick(i)} // here onClick is a prop and not an event handler
       />
     );
@@ -41,6 +56,7 @@ class Board extends React.Component {
 class Game extends React.Component {
   constructor(props) {
     super(props);
+    this.winningSquareIndices = [];
     this.state = {
       history: [
         {
@@ -125,9 +141,17 @@ class Game extends React.Component {
 
     let status;
     if (winner) {
-      status = 'Winner: ' + winner;
+      status = 'Winner: ' + current.squares[winner[0]];
+
+      // Re render the winning squares
+      this.winningSquareIndices = winner;
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      // Reset the winning square indices to be empty else it will highlight the winning indices even when we time travel to go back in the history to a non-winning state
+      this.winningSquareIndices = [];
+
+      if (current.squares.find((e) => e === null) !== undefined)
+        status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      else status = 'Game Drawn';
     }
 
     return (
@@ -136,15 +160,18 @@ class Game extends React.Component {
           <Board
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
+            winningSquareIndices={this.winningSquareIndices}
           />
         </div>
         <div className="game-info">
           <div>{status}</div>
           <div>
             <button
-              onClick={() =>
-                // flip the order when toggle button is clicked
-                this.setState({ reverseMoves: !this.state.reverseMoves })
+              onClick={
+                () =>
+                  // flip the order when toggle button is clicked
+                  this.setState({ reverseMoves: !this.state.reverseMoves })
+                // NOTE: invoking the this.setState() method will cause a re-render of the component
               }
             >
               Toggle Order
@@ -176,7 +203,7 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return lines[i];
     }
   }
   return null;
