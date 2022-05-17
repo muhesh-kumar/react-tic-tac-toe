@@ -51,6 +51,7 @@ class Game extends React.Component {
           },
         },
       ],
+      reverseMoves: false,
       stepNumber: 0,
       xIsNext: true,
     };
@@ -118,6 +119,10 @@ class Game extends React.Component {
       );
     });
 
+    if (this.state.reverseMoves) {
+      moves.reverse();
+    }
+
     let status;
     if (winner) {
       status = 'Winner: ' + winner;
@@ -135,6 +140,16 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <div>
+            <button
+              onClick={() =>
+                // flip the order when toggle button is clicked
+                this.setState({ reverseMoves: !this.state.reverseMoves })
+              }
+            >
+              Toggle Order
+            </button>
+          </div>
           <ol>{moves}</ol>
         </div>
       </div>
