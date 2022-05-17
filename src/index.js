@@ -1,3 +1,4 @@
+import { getByPlaceholderText } from '@testing-library/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -101,7 +102,18 @@ class Game extends React.Component {
         : 'Go to game start';
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button
+            onClick={() => this.jumpTo(move)}
+            style={
+              move === history.length - 1
+                ? {
+                    fontWeight: 'bold',
+                  }
+                : null
+            }
+          >
+            {desc}
+          </button>
         </li>
       );
     });
